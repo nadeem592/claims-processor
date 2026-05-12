@@ -174,7 +174,22 @@ class ClaimProcessingService {
         {
           $group: {
             _id: null,
-            avgClaimAmount: { $avg: { $toDouble: '$claim_amount' } },
+            avgClaimAmount: {
+              $avg: {
+                $convert: {
+                  input: {
+                    $replaceAll: {
+                      input: '$claim_amount',
+                      find: ',',
+                      replacement: '',
+                    },
+                  },
+                  to: 'double',
+                  onError: null,
+                  onNull: null,
+                },
+              },
+            },
             avgProcessingMs: { $avg: '$processing_duration_ms' },
           }
         }
