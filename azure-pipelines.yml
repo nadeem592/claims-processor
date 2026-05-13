@@ -1,0 +1,43 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+
+# Install Node
+- task: UseNode@1
+  inputs:
+    version: '22.x'
+  displayName: Install Node
+
+# Build Frontend
+- script: |
+    cd frontend
+    npm ci
+    npm run build
+  displayName: Build Frontend
+
+# Install Backend Dependencies
+- script: |
+    cd backend
+    npm ci
+  displayName: Build Backend
+
+# Archive Backend
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: 'backend'
+    includeRootFolder: false
+    archiveType: zip
+    archiveFile: '$(Build.ArtifactStagingDirectory)/backend.zip'
+    replaceExistingArchive: true
+
+# Publish Artifact
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: drop
